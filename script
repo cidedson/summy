@@ -1,0 +1,55 @@
+#############################
+# Cid Edson Mendonça Póvoas #
+#############################
+
+# Função summy  
+
+summy <- function(x, num_var, ..., digit=2){
+  options(tidyverse.quiet = TRUE)
+  if(!require(tidyverse))
+    install.packages("tidyverse")
+  library(tidyverse)
+  group_var <- quos(...)
+  num_var <- enquo(num_var)
+  x %>%
+    dplyr::group_by(!!!group_var) %>%
+    dplyr::summarize(n = n(), 
+                     min = min(!!num_var, na.rm = T),
+                     mean = mean(!!num_var, na.rm = T), 
+                     max = max(!!num_var, na.rm = T),
+                     sd = sd(!!num_var, na.rm = T),
+                     se = sd/sqrt(n),
+                     var = var(!!num_var, na.rm = T),
+                     "cv(%)" = (sd/mean)*100,
+                     sum = sum(!!num_var, na.rm = T)) %>% 
+    mutate_if(is.numeric,round,digit)
+}
+
+
+
+# Criando banco de dados
+
+state <- c("tas", "sa",  "qld", "nsw", "nsw", "nt",  "wa",  "wa",
+           "qld", "vic", "nsw", "vic", "qld", "qld", "sa",  "tas",
+           "sa",  "nt",  "wa",  "vic", "qld", "nsw", "nsw", "wa",
+           "sa",  "act", "nsw", "vic", "vic", "act")
+
+incomes <- c(60, 49, 40, 61, 64, 60, 59, 54, 62, 69, 70, 42, 56,
+             61, 61, 61, 58, 51, 48, 65, 49, 49, 41, 48, 52, 46,
+             59, 46, 58, 43)
+
+df <- data.frame(state,incomes)
+
+
+#Utilizando a função com 1 digito
+summy(df,incomes,state,digit = 1) |> as.data.frame()
+
+
+# usando o objeto iris, com o padrão de 2 digitos
+
+summy(iris, Sepal.Length, Species) |> as.data.frame()
+
+
+#utilizando o pipe ("|>") a com 4 digitos...
+
+iris |> summy(Sepal.Length, Species, digit = 4) |> as.data.frame()
